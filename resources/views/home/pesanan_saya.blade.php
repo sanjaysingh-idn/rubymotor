@@ -2,6 +2,11 @@
 
 @section('content')
 	<div class="container">
+		@if (session('success'))
+			<div class="alert alert-success">
+				{{ session('success') }}
+			</div>
+		@endif
 		<nav class="navbar navbar-expand-lg navbar-light bg-light mt-3">
 			<div class="container-fluid">
 				<nav aria-label="breadcrumb">

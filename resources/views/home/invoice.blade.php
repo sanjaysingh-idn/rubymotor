@@ -165,34 +165,48 @@
 		<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}">
 		</script>
 		<script type="text/javascript">
-			document.getElementById('pay-button').onclick = function() {
-				snap.pay('{{ $snapToken }}', {
-					// Optional
+			var payButton = document.getElementById('pay-button');
+			payButton.addEventListener('click', function() {
+				window.snap.pay('{{ $snapToken }}', {
 					onSuccess: function(result) {
-						/* You may add your own implementation here */
-						alert("payment success!");
 						console.log(result);
+						alert("Payment successful!");
+
+						// Send an AJAX request to your Laravel backend to update the order status
+						$.ajax({
+							url: '/update-payment-status',
+							method: 'POST',
+							data: {
+								_token: '{{ csrf_token() }}',
+								order_id: result.order_id,
+								status: 'paid'
+							},
+							success: function(response) {
+								console.log(response);
+								alert("Order status updated successfully");
+								// Redirect to /pesanan_saya with a success message
+								window.location.href = '/pesanan_saya';
+							},
+							error: function(response) {
+								console.log(response);
+								alert("Failed to update order status");
+							}
+						});
 					},
-					// Optional
 					onPending: function(result) {
-						/* You may add your own implementation here */
-						alert("wating your payment!");
 						console.log(result);
+						alert("Waiting for your payment!");
 					},
-					// Optional
 					onError: function(result) {
-						/* You may add your own implementation here */
-						alert("Payment failed! Error code: " + result.status_code + ". Message: " + result
-							.status_message);
 						console.log(result);
+						alert("Payment failed!");
 					},
-					// Optional
 					onClose: function() {
-						/* You may add your own implementation here */
-						alert('you closed the popup without finishing the payment');
+						console.log('Customer closed the popup without finishing the payment');
+						alert('You closed the popup without finishing the payment');
 					}
-				})
-			};
+				});
+			});
 		</script>
 	@endif
 	<script>

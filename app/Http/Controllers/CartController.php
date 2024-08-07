@@ -376,14 +376,13 @@ class CartController extends Controller
         } else {
             $snapToken = null;
         }
-
         return view('home.invoice', [
-            'title'         => 'Halaman Invoice - ' . $pesanan->order_number,
-            'kategori'      => Kategori::all(),
-            'produk'        => Produk::all(),
-            'banner'        => Banner::all(),
-            'snapToken'     => $snapToken,
-            'pesanan'       => $pesanan,
+            'title' => 'Halaman Invoice - ' . $pesanan->order_number,
+            'kategori' => Kategori::all(),
+            'produk' => Produk::all(),
+            'banner' => Banner::all(),
+            'snapToken' => $snapToken,
+            'pesanan' => $pesanan,
             'excludeJquery' => false
         ]);
     }
@@ -463,6 +462,17 @@ class CartController extends Controller
 
         return response()->json(['status' => 'success']);
     }
+
+    public function updatePaymentStatus(Request $request)
+    {
+        dd($request);
+        $pesanan = Pesanan::where('order_number', $request->order_id)->firstOrFail();
+        $pesanan->status = $request->status;
+        $pesanan->save();
+
+        return response()->json(['message' => 'Order status updated successfully']);
+    }
+
 
     public function destroy($id)
     {

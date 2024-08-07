@@ -63,7 +63,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/pesanan_saya/bayar/{id}', [CartController::class, 'bayar'])->name('pesanan_saya.bayar');
     Route::get('/order-lowest-price', [CartController::class, 'orderLowestPrice'])->name('orderLowestPrice');
     Route::post('/midtrans/notification', [CartController::class, 'notificationHandler'])->name('midtrans.notification');
-
-
-    // Route::get('/invoice', [CartController::class, 'invoice'])->name('invoice');
+    Route::post('/update-payment-status', [CartController::class, 'updatePaymentStatus']);
 });
