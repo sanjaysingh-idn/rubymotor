@@ -159,11 +159,11 @@ class CartController extends Controller
         curl_close($curl);
 
         if ($err) {
-            echo "cURL Error #:" . $err;
+            return response()->json(['error' => "cURL Error #:" . $err], 500);
         } else {
             $response = json_decode($response, true);
             $data_kota = $response['rajaongkir']['results'];
-            return json_encode($data_kota);
+            return response()->json($data_kota);
         }
     }
 
@@ -211,7 +211,6 @@ class CartController extends Controller
         $city_origin = 445;
 
         $provinces = $this->getProvince();
-
         return view('home.checkout', [
             'title'         => 'Halaman Checkout',
             'kategori'      => Kategori::all(),
@@ -220,11 +219,13 @@ class CartController extends Controller
             'produk'        => Produk::all(),
             'banner'        => Banner::all(),
             'city_origin'   => $city_origin,
+            'excludeJquery' => true,
         ]);
     }
 
     public function order_store(Request $request)
     {
+        // dd($request->all());
         // Generate order number
         $currentDate = now()->format('Ymd');
         $year = date('Y');
@@ -270,7 +271,7 @@ class CartController extends Controller
                 'produk_id'     => $associatedModelId,
                 'product_name'  => $item->name,
                 'quantity'      => $item->quantity,
-                'size'          => $ukuran,
+                // 'size'          => $ukuran,
                 'price'         => $item->price,
             ]);
         }
@@ -355,11 +356,8 @@ class CartController extends Controller
         $pesanan = Pesanan::where('order_number', $id)->firstOrFail();
         if ($pesanan->status === 'unpaid') {
             \Midtrans\Config::$serverKey = config('midtrans.server_key');
-            // Set to Development/Sandbox Environment (default). Set to true for Production Environment (accept real transaction).
             \Midtrans\Config::$isProduction = false;
-            // Set sanitization on (default)
             \Midtrans\Config::$isSanitized = true;
-            // Set 3DS transaction for credit card to true
             \Midtrans\Config::$is3ds = true;
 
             $params = array(
@@ -378,6 +376,7 @@ class CartController extends Controller
         } else {
             $snapToken = null;
         }
+
         return view('home.invoice', [
             'title'         => 'Halaman Invoice - ' . $pesanan->order_number,
             'kategori'      => Kategori::all(),
@@ -385,6 +384,7 @@ class CartController extends Controller
             'banner'        => Banner::all(),
             'snapToken'     => $snapToken,
             'pesanan'       => $pesanan,
+            'excludeJquery' => false
         ]);
     }
 
@@ -414,6 +414,54 @@ class CartController extends Controller
 
         $snapToken = \Midtrans\Snap::getSnapToken($params);
         return $snapToken;
+    }
+
+    public function notificationHandler(Request $request)
+    {
+        \Midtrans\Config::$serverKey = config('midtrans.server_key');
+        \Midtrans\Config::$isProduction = false;
+        \Midtrans\Config::$isSanitized = true;
+        \Midtrans\Config::$is3ds = true;
+
+        $notification = new \Midtrans\Notification();
+
+        $transaction = $notification->transaction_status;
+        $type = $notification->payment_type;
+        $orderId = $notification->order_id;
+        $fraud = $notification->fraud_status;
+
+        $pesanan = Pesanan::where('order_number', $orderId)->firstOrFail();
+
+        if ($transaction == 'capture') {
+            if ($type == 'credit_card') {
+                if ($fraud == 'challenge') {
+                    // TODO set payment status in merchant's database to 'challenge'
+                    $pesanan->status = 'unpaid';
+                } else {
+                    // TODO set payment status in merchant's database to 'success'
+                    $pesanan->status = 'paid';
+                }
+            }
+        } elseif ($transaction == 'settlement') {
+            // TODO set payment status in merchant's database to 'settlement'
+            $pesanan->status = 'paid';
+        } elseif ($transaction == 'pending') {
+            // TODO set payment status in merchant's database to 'pending'
+            $pesanan->status = 'unpaid';
+        } elseif ($transaction == 'deny') {
+            // TODO set payment status in merchant's database to 'deny'
+            $pesanan->status = 'unpaid';
+        } elseif ($transaction == 'expire') {
+            // TODO set payment status in merchant's database to 'expire'
+            $pesanan->status = 'unpaid';
+        } elseif ($transaction == 'cancel') {
+            // TODO set payment status in merchant's database to 'cancel'
+            $pesanan->status = 'unpaid';
+        }
+
+        $pesanan->save();
+
+        return response()->json(['status' => 'success']);
     }
 
     public function destroy($id)

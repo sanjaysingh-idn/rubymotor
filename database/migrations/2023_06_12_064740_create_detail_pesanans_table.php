@@ -19,7 +19,7 @@ class CreateDetailPesanansTable extends Migration
             $table->foreignId('produk_id');
             $table->string('product_name');
             $table->integer('quantity');
-            $table->string('size');
+            // $table->string('size');
             $table->bigInteger('price');
             $table->timestamps();
 

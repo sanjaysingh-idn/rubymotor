@@ -34,13 +34,17 @@
 		<link rel="stylesheet" href="{{ asset('template_front') }}/css/bootstrap.min.css" type="text/css" />
 		<link rel="stylesheet" href="{{ asset('template_front') }}/css/font-awesome.min.css" type="text/css" />
 		<link rel="stylesheet" href="{{ asset('template_front') }}/css/elegant-icons.css" type="text/css" />
-		<link rel="stylesheet" href="{{ asset('template_front') }}/css/nice-select.css" type="text/css" />
+		{{-- <link rel="stylesheet" href="{{ asset('template_front') }}/css/nice-select.css" type="text/css" /> --}}
 		<link rel="stylesheet" href="{{ asset('template_front') }}/css/jquery-ui.min.css" type="text/css" />
 		<link rel="stylesheet" href="{{ asset('template_front') }}/css/owl.carousel.min.css" type="text/css" />
 		<link rel="stylesheet" href="{{ asset('template_front') }}/css/slicknav.min.css" type="text/css" />
 		<link rel="stylesheet" href="{{ asset('template_front') }}/css/style.css" type="text/css" />
 		{{-- <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script> --}}
+		{{-- @if (isset($excludeJquery) || $excludeJquery)
+			<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+				crossorigin="anonymous"></script>
+		@endif --}}
 	</head>
 
 	<body>
@@ -54,8 +58,15 @@
 		@include('home.layouts.navbar')
 		{{-- @include('home.layouts.hero') --}}
 		@if (
-			!Request::is('login', 'register', 'keranjang', 'checkout', 'produk', 'tentang') &&
-				!Str::startsWith($currentUrl, 'produk/'))
+			!Request::is('login') &&
+				!Request::is('register') &&
+				!Request::is('keranjang') &&
+				!Request::is('checkout') &&
+				!Request::is('produk') &&
+				!Request::is('tentang') &&
+				!Request::is('pesanan_saya') &&
+				!Str::startsWith($currentUrl, 'produk/') &&
+				!Str::startsWith($currentUrl, 'pesanan_saya/'))
 			@include('home.layouts.hero')
 		@endif
 
@@ -65,13 +76,16 @@
 
 		<script src="{{ asset('template_front') }}/js/jquery-3.3.1.min.js"></script>
 		<script src="{{ asset('template_front') }}/js/bootstrap.min.js"></script>
-		<script src="{{ asset('template_front') }}/js/jquery.nice-select.min.js"></script>
+		{{-- <script src="{{ asset('template_front') }}/js/jquery.nice-select.min.js"></script> --}}
 		<script src="{{ asset('template_front') }}/js/jquery-ui.min.js"></script>
 		<script src="{{ asset('template_front') }}/js/jquery.slicknav.js"></script>
 		<script src="{{ asset('template_front') }}/js/mixitup.min.js"></script>
 		<script src="{{ asset('template_front') }}/js/owl.carousel.min.js"></script>
 		<script src="{{ asset('template_front') }}/js/main.js"></script>
-		<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
+		@if (!isset($excludeJquery) || !$excludeJquery)
+			<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
+		@endif
+
 		<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
 		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
 

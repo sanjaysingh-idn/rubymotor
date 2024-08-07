@@ -26,19 +26,23 @@
 						<div class="container mb-5 mt-3">
 							<div class="row">
 								<div class="col-12">
-									<button id="pay-button" class="btn btn-xs btn-success"><i class="fa fa-money-bill"></i> Bayar Sekarang</button>
+									@if ($snapToken)
+										<button id="pay-button" class="btn btn-xs btn-success"><i class="fa fa-money"></i> Bayar Sekarang</button>
+									@else
+										<button class="btn btn-xs btn-success" disabled>Paid</button>
+									@endif
 								</div>
 							</div>
 							<div class="row d-flex align-items-baseline">
 								<div class="col-xl-9">
 									<p>Invoice >> <strong>{{ $pesanan->order_number }}</strong></p>
 								</div>
-								<div class="col-xl-3 float-end">
+								{{-- <div class="col-xl-3 float-end">
 									<a class="btn btn-light text-capitalize border-0" data-mdb-ripple-color="dark"><i
-											class="fas fa-print text-primary"></i> Print</a>
+											class="fa fa-print text-primary"></i> Print</a>
 									<a class="btn btn-light text-capitalize" data-mdb-ripple-color="dark"><i
 											class="far fa-file-pdf text-danger"></i> Export</a>
-								</div>
+								</div> --}}
 								<hr>
 							</div>
 
@@ -55,18 +59,18 @@
 										<ul class="list-unstyled">
 											<li class="text-muted">Kepada: <strong>{{ $pesanan->name }}</strong></li>
 											<li class="text-muted">{{ $pesanan->address }}, City</li>
-											<li class="text-muted"><i class="fas fa-phone"></i> {{ $pesanan->contact }}</li>
+											<li class="text-muted"><i class="fa fa-phone"></i> {{ $pesanan->contact }}</li>
 										</ul>
 									</div>
 									<div class="col-xl-2"></div>
 									<div class="col-xl-4">
 										<p class="text-muted">Invoice</p>
 										<ul class="list-unstyled">
-											<li class="text-muted"><i class="fas fa-circle text-dark"></i> <span class="fw-bold">ID:
+											<li class="text-muted"><i class="fa fa-circle text-dark"></i> <span class="fw-bold">ID:
 												</span>{{ $pesanan->order_number }}</li>
-											<li class="text-muted"><i class="fas fa-circle text-dark"></i> <span class="fw-bold">Creation Date: </span>
+											<li class="text-muted"><i class="fa fa-circle text-dark"></i> <span class="fw-bold">Creation Date: </span>
 												{{ $pesanan->created_at->format('d M Y, H:i:s') }}</li>
-											<li class="text-muted"><i class="fas fa-circle text-dark"></i> <span class="me-1 fw-bold">Status:</span>
+											<li class="text-muted"><i class="fa fa-circle text-dark"></i> <span class="me-1 fw-bold">Status:</span>
 												@if ($pesanan->status == 'unpaid')
 													<span class="badge bg-danger">{{ $pesanan->status }}</span>
 												@elseif ($pesanan->status == 'paid')
@@ -157,34 +161,40 @@
 @endsection
 
 @push('scripts')
-	<script type="text/javascript">
-		// For example trigger on button clicked, or any time you need
-		var payButton = document.getElementById('pay-button');
-		payButton.addEventListener('click', function() {
-			// Trigger snap popup. @TODO: Replace TRANSACTION_TOKEN_HERE with your transaction token
-			window.snap.pay('{{ $snapToken }}', {
-				onSuccess: function(result) {
-					/* You may add your own implementation here */
-					alert("payment success!");
-					console.log(result);
-				},
-				onPending: function(result) {
-					/* You may add your own implementation here */
-					alert("wating your payment!");
-					console.log(result);
-				},
-				onError: function(result) {
-					/* You may add your own implementation here */
-					alert("payment failed!");
-					console.log(result);
-				},
-				onClose: function() {
-					/* You may add your own implementation here */
-					alert('you closed the popup without finishing the payment');
-				}
-			})
-		});
-	</script>
+	@if ($snapToken)
+		<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}">
+		</script>
+		<script type="text/javascript">
+			document.getElementById('pay-button').onclick = function() {
+				snap.pay('{{ $snapToken }}', {
+					// Optional
+					onSuccess: function(result) {
+						/* You may add your own implementation here */
+						alert("payment success!");
+						console.log(result);
+					},
+					// Optional
+					onPending: function(result) {
+						/* You may add your own implementation here */
+						alert("wating your payment!");
+						console.log(result);
+					},
+					// Optional
+					onError: function(result) {
+						/* You may add your own implementation here */
+						alert("Payment failed! Error code: " + result.status_code + ". Message: " + result
+							.status_message);
+						console.log(result);
+					},
+					// Optional
+					onClose: function() {
+						/* You may add your own implementation here */
+						alert('you closed the popup without finishing the payment');
+					}
+				})
+			};
+		</script>
+	@endif
 	<script>
 		$(document).ready(function() {
 			$('#table').DataTable({
